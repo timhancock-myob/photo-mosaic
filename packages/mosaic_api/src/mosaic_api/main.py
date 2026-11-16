@@ -1,15 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
-import mosaic_core
 import source_gateway
+from mosaic_api.services.meta import Health, get_health
 from mosaic_api.settings import Settings
-
-
-class Health(BaseModel):
-    status: str
-    core_version: str
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -24,7 +18,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/health", tags=["meta"])
     def health() -> Health:
-        return Health(status="ok", core_version=mosaic_core.__version__)
+        return get_health()
 
     app.include_router(source_gateway.router)
     return app
