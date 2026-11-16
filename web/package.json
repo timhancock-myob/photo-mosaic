@@ -1,0 +1,44 @@
+{
+  "name": "photo-mosaic-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "client": "openapi-typescript ../contracts/mosaic-api.openapi.json -o src/api/generated/schema.ts"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5",
+    "openapi-fetch": "^0.17.0",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^22",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^4",
+    "eslint": "^9",
+    "eslint-plugin-react-hooks": "^5",
+    "eslint-plugin-react-refresh": "^0.5.8",
+    "globals": "^17.14.0",
+    "jsdom": "^31.0.1",
+    "openapi-typescript": "^7",
+    "prettier": "^3",
+    "typescript": "~5.6",
+    "typescript-eslint": "^8.73.0",
+    "vite": "^5",
+    "vitest": "^2"
+  }
+}

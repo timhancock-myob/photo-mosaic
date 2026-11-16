@@ -1,0 +1,15 @@
+[project]
+name = "mosaic-core"
+version = "0.0.0"
+description = "Pure Python mosaic engine: decode, features, matching, rendering. No web dependencies."
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.0",
+    "pillow>=10.4",
+    "scikit-image>=0.24",
+    "scipy>=1.14",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

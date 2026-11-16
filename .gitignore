@@ -1,0 +1,32 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+*.egg-info/
+
+# Web
+node_modules/
+web/dist/
+web/test-results/
+web/playwright-report/
+
+# Local data and secrets
+data/
+.env
+*.local
+
+# Real photos never go in git; only licence-clean images under samples/
+*.heic
+*.HEIC
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+*.tsbuildinfo

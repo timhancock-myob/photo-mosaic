@@ -1,0 +1,20 @@
+[project]
+name = "mosaic-api"
+version = "0.0.0"
+description = "FastAPI Mosaic API: projects, tile sets, jobs, mosaics, export."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "mosaic-core",
+    "pydantic-settings>=2.4",
+    "source-gateway",
+    "uvicorn[standard]>=0.30",
+]
+
+[tool.uv.sources]
+mosaic-core = { workspace = true }
+source-gateway = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

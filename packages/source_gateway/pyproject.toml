@@ -1,0 +1,13 @@
+[project]
+name = "source-gateway"
+version = "0.0.0"
+description = "One provider interface over local folders and third-party photo sources."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "pydantic>=2.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
