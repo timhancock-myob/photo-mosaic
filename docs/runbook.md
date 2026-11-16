@@ -22,5 +22,5 @@ Local state lives in `data/` (git-ignored). Delete it to reset.
 
 ## Troubleshooting
 
-- `API: unavailable`: check the `dev-api` output; port 8000 may be in use (`MOSAIC_PORT` changes the API port, `VITE_API_TARGET` points the web proxy at it).
+- `API: unavailable`: check the `dev-api` output; port 8000 may be in use (set `MOSAIC_PORT` in `.env`; `make dev` points the web proxy at it).
 - `make contracts-check` fails in CI: run `make client` and commit the changes.
