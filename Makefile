@@ -1,4 +1,8 @@
 .DEFAULT_GOAL := help
+
+-include .env
+MOSAIC_HOST ?= 127.0.0.1
+MOSAIC_PORT ?= 8000
 .PHONY: help setup dev dev-api dev-web test lint format typecheck openapi client contracts-check build clean
 
 help: ## List targets
@@ -9,14 +13,14 @@ setup: ## Install Python and web dependencies and git hooks
 	cd web && pnpm install
 	uv run pre-commit install
 
-dev: ## Run API (:8000) and web dev server (:5173) together
-	@trap 'kill 0' INT TERM EXIT; $(MAKE) dev-api & $(MAKE) dev-web & wait
+dev: ## Run API (MOSAIC_PORT, default 8000) and web (:5173) together
+	@trap 'trap - INT TERM EXIT; kill 0' INT TERM EXIT; $(MAKE) dev-api & $(MAKE) dev-web & wait
 
 dev-api:
-	uv run uvicorn mosaic_api.main:app --host 127.0.0.1 --port 8000 --reload --reload-dir packages
+	uv run uvicorn mosaic_api.main:app --host $(MOSAIC_HOST) --port $(MOSAIC_PORT) --reload --reload-dir packages
 
 dev-web:
-	cd web && pnpm dev
+	cd web && VITE_API_TARGET=http://$(MOSAIC_HOST):$(MOSAIC_PORT) pnpm dev
 
 test: ## Run all tests
 	uv run pytest
@@ -40,7 +44,7 @@ openapi: ## Export OpenAPI schema to contracts/
 	uv run python scripts/export_openapi.py
 
 client: openapi ## Regenerate the TypeScript API types from contracts/
-	cd web && pnpm client && pnpm exec prettier --write src/api/generated >/dev/null 2>&1 || true
+	cd web && pnpm client
 
 contracts-check: client ## Fail if contracts/ or the generated client are stale
 	git diff --exit-code -- contracts web/src/api/generated
