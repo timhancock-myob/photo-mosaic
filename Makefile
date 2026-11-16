@@ -1,7 +1,6 @@
 .DEFAULT_GOAL := help
 
 -include .env
-MOSAIC_HOST ?= 127.0.0.1
 MOSAIC_PORT ?= 8000
 .PHONY: help setup dev dev-api dev-web test lint format typecheck openapi client contracts-check build clean
 
@@ -17,10 +16,10 @@ dev: ## Run API (MOSAIC_PORT, default 8000) and web (:5173) together
 	@trap 'trap - INT TERM EXIT; kill 0' INT TERM EXIT; $(MAKE) dev-api & $(MAKE) dev-web & wait
 
 dev-api:
-	uv run uvicorn mosaic_api.main:app --host $(MOSAIC_HOST) --port $(MOSAIC_PORT) --reload --reload-dir packages
+	uv run uvicorn mosaic_api.main:app --host 127.0.0.1 --port $(MOSAIC_PORT) --reload --reload-dir packages
 
 dev-web:
-	cd web && VITE_API_TARGET=http://$(MOSAIC_HOST):$(MOSAIC_PORT) pnpm dev
+	cd web && VITE_API_TARGET=http://127.0.0.1:$(MOSAIC_PORT) pnpm dev
 
 test: ## Run all tests
 	uv run pytest
