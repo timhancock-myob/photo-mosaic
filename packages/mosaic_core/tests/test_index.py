@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from images import encode, smooth_noise, solid
 from PIL import Image, ImageEnhance
 
@@ -31,6 +32,13 @@ def test_index_skips_with_reasons(tmp_path: Path) -> None:
         "tiny": (SkipReason.TOO_SMALL, None),
         "missing": (SkipReason.UNREADABLE, None),
     }
+
+
+def test_decompression_bomb_is_skipped(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 1000)
+    index = index_tiles([("big", encode(solid((1, 2, 3), (100, 100))))])
+    assert index.tiles == []
+    assert index.skipped[0].reason == SkipReason.UNREADABLE
 
 
 def test_near_duplicates_can_be_kept() -> None:

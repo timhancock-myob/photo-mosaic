@@ -80,7 +80,7 @@ def index_tile(
             if probe.getexif().get(_EXIF_ORIENTATION, 1) in (5, 6, 7, 8):
                 width, height = height, width
         img = open_image(data, min_side=thumb_side)
-    except (DecodeError, OSError, ValueError) as exc:
+    except (DecodeError, OSError, ValueError, Image.DecompressionBombError) as exc:
         raise _Skip(SkipReason.UNREADABLE, str(exc)) from exc
     if min(width, height) < min_side:
         raise _Skip(SkipReason.TOO_SMALL, f"{width}x{height}")
