@@ -39,6 +39,7 @@ known-first-party = ["mosaic_core", "source_gateway", "mosaic_api"]
 [tool.pytest.ini_options]
 testpaths = ["packages/mosaic_core/tests", "packages/source_gateway/tests", "packages/mosaic_api/tests"]
 addopts = "--import-mode=importlib"
+pythonpath = ["packages/mosaic_core/tests"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -115,3 +116,7 @@ cwd = "web"
 help = "Remove build output and caches (keeps data/)"
 shell = "import shutil; [shutil.rmtree(p, ignore_errors=True) for p in ('web/dist', '.pytest_cache', '.mypy_cache', '.ruff_cache')]"
 interpreter = "python"
+
+[tool.poe.tasks.mosaic]
+help = "Build a mosaic from the command line: poe mosaic BASE TILES_DIR OUT [--cols N --rows M]"
+cmd = "python scripts/make_mosaic.py"

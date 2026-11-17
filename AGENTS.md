@@ -14,6 +14,7 @@ Guidance for anyone (human or AI) working in this repo. Read `docs/architecture.
 | Lint + typecheck + test | `uv run poe check` |
 | Regenerate OpenAPI + TS client | `uv run poe client` |
 | Check contracts are committed | `uv run poe contracts-check` |
+| Build a mosaic from the CLI | `uv run poe mosaic BASE TILES_DIR OUT --cols 50` |
 | List all tasks | `uv run poe` |
 
 Tasks live in `[tool.poe.tasks]` in the root `pyproject.toml` (ADR 0006); there is no Makefile. `uv run` keeps `.venv/` in sync automatically. Requires Python 3.12+ with [uv](https://docs.astral.sh/uv/) and Node 22 with pnpm (`corepack enable`).
