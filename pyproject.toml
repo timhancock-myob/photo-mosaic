@@ -19,6 +19,7 @@ mosaic-api = { workspace = true }
 dev = [
     "httpx>=0.27",
     "mypy>=1.11",
+    "poethepoet>=0.29",
     "pre-commit>=3.8",
     "pytest>=8.3",
     "pytest-cov>=5.0",
@@ -47,3 +48,70 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "mosaic_core.*"
 strict = true
+
+[tool.poe.tasks.setup]
+help = "Install web dependencies and git hooks (uv run installs the Python side)"
+sequence = [{ cmd = "pnpm install", cwd = "web" }, { cmd = "pre-commit install" }]
+
+[tool.poe.tasks.dev]
+help = "Run API (127.0.0.1:8000, or MOSAIC_PORT) and web (localhost:5173) together"
+cmd = "python scripts/dev.py"
+
+[tool.poe.tasks.dev-api]
+help = "Run only the API with reload"
+cmd = "python scripts/dev.py --only api"
+
+[tool.poe.tasks.dev-web]
+help = "Run only the web dev server"
+cmd = "python scripts/dev.py --only web"
+
+[tool.poe.tasks.test]
+help = "Run all tests"
+sequence = [{ cmd = "pytest" }, { cmd = "pnpm test", cwd = "web" }]
+
+[tool.poe.tasks.lint]
+help = "Lint and format-check everything"
+sequence = [
+    { cmd = "ruff check ." },
+    { cmd = "ruff format --check ." },
+    { cmd = "pnpm lint", cwd = "web" },
+    { cmd = "pnpm format:check", cwd = "web" },
+]
+
+[tool.poe.tasks.format]
+help = "Auto-format everything"
+sequence = [
+    { cmd = "ruff check --fix ." },
+    { cmd = "ruff format ." },
+    { cmd = "pnpm format", cwd = "web" },
+]
+
+[tool.poe.tasks.typecheck]
+help = "Type-check Python and TypeScript"
+sequence = [{ cmd = "mypy packages scripts" }, { cmd = "pnpm typecheck", cwd = "web" }]
+
+[tool.poe.tasks.check]
+help = "lint + typecheck + test"
+sequence = ["lint", "typecheck", "test"]
+
+[tool.poe.tasks.openapi]
+help = "Export the OpenAPI schema to contracts/"
+cmd = "python scripts/export_openapi.py"
+
+[tool.poe.tasks.client]
+help = "Regenerate contracts/ and the TypeScript API types"
+sequence = ["openapi", { cmd = "pnpm client", cwd = "web" }]
+
+[tool.poe.tasks.contracts-check]
+help = "Fail if contracts/ or the generated client are stale"
+sequence = ["client", { cmd = "git diff --exit-code -- contracts web/src/api/generated" }]
+
+[tool.poe.tasks.build]
+help = "Production build of the web app"
+cmd = "pnpm build"
+cwd = "web"
+
+[tool.poe.tasks.clean]
+help = "Remove build output and caches (keeps data/)"
+shell = "import shutil; [shutil.rmtree(p, ignore_errors=True) for p in ('web/dist', '.pytest_cache', '.mypy_cache', '.ruff_cache')]"
+interpreter = "python"

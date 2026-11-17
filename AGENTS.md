@@ -6,15 +6,17 @@ Guidance for anyone (human or AI) working in this repo. Read `docs/architecture.
 
 | Task | Command |
 | --- | --- |
-| Install everything + git hooks | `make setup` |
-| Run API (:8000) + web (:5173) | `make dev` |
-| Tests | `make test` |
-| Lint + format check | `make lint` |
-| Type check | `make typecheck` |
-| Regenerate OpenAPI + TS client | `make client` |
-| Check contracts are committed | `make contracts-check` |
+| Install everything + git hooks | `uv run poe setup` |
+| Run API (:8000) + web (:5173) | `uv run poe dev` |
+| Tests | `uv run poe test` |
+| Lint + format check | `uv run poe lint` |
+| Type check | `uv run poe typecheck` |
+| Lint + typecheck + test | `uv run poe check` |
+| Regenerate OpenAPI + TS client | `uv run poe client` |
+| Check contracts are committed | `uv run poe contracts-check` |
+| List all tasks | `uv run poe` |
 
-Requires Python 3.12+ with [uv](https://docs.astral.sh/uv/) and Node 22 with pnpm (`corepack enable`).
+Tasks live in `[tool.poe.tasks]` in the root `pyproject.toml` (ADR 0006); there is no Makefile. `uv run` keeps `.venv/` in sync automatically. Requires Python 3.12+ with [uv](https://docs.astral.sh/uv/) and Node 22 with pnpm (`corepack enable`).
 
 ## Layout
 
@@ -35,7 +37,7 @@ Requires Python 3.12+ with [uv](https://docs.astral.sh/uv/) and Node 22 with pnp
 
 ## Definition of done
 
-1. Tests added/updated; `make lint typecheck test` passes.
-2. If the API changed: `make client` and commit `contracts/` and `web/src/api/generated/` (CI runs `make contracts-check`).
+1. Tests added/updated; `uv run poe check` passes.
+2. If the API changed: `uv run poe client` and commit `contracts/` and `web/src/api/generated/` (CI runs `uv run poe contracts-check`).
 3. `docs/architecture.md` updated if behaviour changed; new ADR for significant decisions.
 4. Pre-commit hooks pass (`uv run pre-commit run --all-files`).

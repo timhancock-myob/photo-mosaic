@@ -16,7 +16,7 @@ A **local-first** web app (ADR 0001) that builds a photo mosaic:
 
 **Extras (designed for, built later):** crop and rescale tiles; swap a tile from ranked alternatives; reuse policies "even spread" and "no repeats"; colour blending; Google Photos source.
 
-**Distribution:** developer setup only, `make setup && make dev` (ADR 0005).
+**Distribution:** developer setup only, `uv run poe setup && uv run poe dev` (ADR 0005, task runner per ADR 0006).
 
 ## 2. Architecture
 

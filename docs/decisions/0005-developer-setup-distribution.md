@@ -1,6 +1,6 @@
 # 0005. Distribution: developer setup only for v1
 
-- **Status:** Accepted
+- **Status:** Accepted; commands amended by [0006](0006-poe-task-runner.md)
 - **Date:** 2026-11-17
 
 ## Context

@@ -55,4 +55,4 @@ jobs:
           cache-dependency-path: web/pnpm-lock.yaml
       - run: uv python install 3.12 && uv sync --locked
       - run: cd web && pnpm install --frozen-lockfile
-      - run: make contracts-check
+      - run: uv run poe contracts-check

@@ -10,4 +10,5 @@ Format: **Status**, **Context**, **Decision**, **Consequences**.
 | [0002](0002-grid-columns-and-rows.md) | Grid: user sets columns and rows independently | Accepted |
 | [0003](0003-neighbour-seam-matching.md) | Matching: cell fit plus neighbour seam blending | Accepted |
 | [0004](0004-default-reuse-policy.md) | Default reuse policy: reuse freely | Accepted |
-| [0005](0005-developer-setup-distribution.md) | Distribution: developer setup only for v1 | Accepted |
+| [0005](0005-developer-setup-distribution.md) | Distribution: developer setup only for v1 | Accepted (commands amended by 0006) |
+| [0006](0006-poe-task-runner.md) | Task runner: poe tasks in pyproject.toml, no Makefile | Accepted |
