@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from images import solid
+from images import smooth_noise, solid
 from numpy.typing import NDArray
 from PIL import Image
 
@@ -49,6 +49,18 @@ def test_tile_is_cropped_to_cell_aspect() -> None:
     wide.paste((0, 0, 255), (100, 0, 200, 100))  # blue centre third
     fit = tile_features([wide], aspect=1.0).fit[0]
     assert np.linalg.norm(fit - lab_of((0, 0, 255)), axis=1).max() < 2
+
+
+def test_identical_textured_tile_ranks_first() -> None:
+    texture = smooth_noise(3, (60, 60))
+    mean_rgb = np.asarray(texture).reshape(-1, 3).mean(axis=0)
+    flat = solid((int(mean_rgb[0]), int(mean_rgb[1]), int(mean_rgb[2])), (60, 60))
+    feats = tile_features([flat, texture], aspect=1.0, spec=SignatureSpec(grid=1))
+    base = base_signatures(texture, Grid(1, 1), SignatureSpec(grid=1))
+    costs = fit_costs(base.fit.reshape(1, 1, 3), feats.fit)[0]
+    assert costs[1] < 0.01
+    assert costs[1] < costs[0]
+    assert np.abs(base.edges[0, 0] - tile_features([texture], 1.0).edges[0]).max() < 0.01
 
 
 def test_base_signatures_shape_and_colour() -> None:

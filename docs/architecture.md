@@ -76,8 +76,9 @@ Runs once per tile set. Cached by content hash.
 All in CIELAB.
 - **Fit signature:** the tile, cropped to the cell aspect ratio, downsampled to a small `g x g` Lab grid (e.g. 4x4 to 8x8). This keeps structure, so a cell that is dark on one side and light on the other doesn't match a flat grey tile. It is a superset of the "centre plus edges" scheme in the initial docs.
 - **Edge strips:** for each side (top, right, bottom, left), the mean Lab of `s` segments along a thin border strip. Used for the seam term.
-- **Base cells:** the base is **resampled** to `(cols * g, rows * g)`, not cropped, and split into the same `g x g` grids. Base cell edge strips come from a second resample to `(cols * 2s, rows * 2s)`; they set the colour step each seam should reproduce (ADR 0007).
-- Defaults (`SignatureSpec`): `g = 6`, `s = 4`, strip depth 8% of the tile side.
+- **Base cells:** the base is **resampled** to `(cols * g, rows * g)`, not cropped, and split into the same `g x g` grids. Base cell edge strips come from a second resample to `(cols * E, rows * E)`, where `E` is the smallest multiple of `s` at which the strip depth is at least 1 px; they set the colour step each seam should reproduce (ADR 0007).
+- Tiles and base cells go through the same steps (box-resample in sRGB to `g x g` or `E x E`, then convert to Lab), so a tile identical to a cell scores a fit of zero.
+- Defaults (`SignatureSpec`): `g = 6`, `s = 4`, strip depth 8% of the tile side (`E = 16`).
 
 ### 4.4 Distance
 - The colour difference is **CIE76** (Euclidean in Lab), so it vectorises with `scipy.spatial.distance.cdist` or plain NumPy. CIEDE2000 can be added later for the final ranking if tuning shows it helps.

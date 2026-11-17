@@ -28,9 +28,11 @@ class SignatureSpec:
             raise ValueError("invalid signature spec")
 
     @property
-    def work_size(self) -> int:
-        step = math.lcm(self.grid, self.edge_segments)
-        return step * math.ceil(32 / step)
+    def edge_size(self) -> int:
+        """Side of the square that edge strips are sampled from: a whole number of segments,
+        large enough that ``edge_depth`` is at least one pixel."""
+        s = self.edge_segments
+        return s * math.ceil(1 / (self.edge_depth * s))
 
 
 @dataclass(frozen=True)
@@ -73,14 +75,15 @@ def tile_features(
 ) -> TileFeatures:
     spec = spec or SignatureSpec()
     n = len(thumbs)
-    size = spec.work_size
+    g, e = spec.grid, spec.edge_size
     fit = np.empty((n, spec.grid * spec.grid, 3), dtype=np.float32)
     edges = np.empty((n, 4, spec.edge_segments, 3), dtype=np.float32)
     for i, thumb in enumerate(thumbs):
         box = center_crop_box(thumb.width, thumb.height, aspect)
-        lab = to_lab(thumb.convert("RGB").resize((size, size), Image.Resampling.BOX, box=box))
-        fit[i] = _block_mean(lab, spec.grid).reshape(-1, 3)
-        edges[i] = _edge_strips(lab, spec)
+        rgb = thumb.convert("RGB")
+        # Same resample-then-Lab steps as base_signatures, so identical pixels match exactly.
+        fit[i] = to_lab(rgb.resize((g, g), Image.Resampling.BOX, box=box)).reshape(-1, 3)
+        edges[i] = _edge_strips(to_lab(rgb.resize((e, e), Image.Resampling.BOX, box=box)), spec)
     return TileFeatures(fit=fit, edges=edges)
 
 
@@ -93,18 +96,13 @@ def base_signatures(
     rgb = base.convert("RGB")
     small = rgb.resize((grid.cols * g, grid.rows * g), Image.Resampling.BOX)
     lab = to_lab(small).reshape(grid.rows, g, grid.cols, g, 3).transpose(0, 2, 1, 3, 4)
-    e = 2 * spec.edge_segments
+    e = spec.edge_size
     edge_img = rgb.resize((grid.cols * e, grid.rows * e), Image.Resampling.BOX)
     edge_lab = to_lab(edge_img).reshape(grid.rows, e, grid.cols, e, 3).transpose(0, 2, 1, 3, 4)
     return BaseSignatures(
         fit=np.ascontiguousarray(lab.reshape(grid.rows, grid.cols, g * g, 3)),
         edges=_edge_strips(edge_lab, spec),
     )
-
-
-def _block_mean(lab: NDArray[np.float32], blocks: int) -> NDArray[np.float32]:
-    s = lab.shape[0] // blocks
-    return np.asarray(lab.reshape(blocks, s, blocks, s, 3).mean(axis=(1, 3)), dtype=np.float32)
 
 
 def _edge_strips(lab: NDArray[np.float32], spec: SignatureSpec) -> NDArray[np.float32]:
