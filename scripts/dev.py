@@ -19,15 +19,14 @@ def main() -> int:
     port = str(Settings().port)
 
     procs: list[subprocess.Popen[bytes]] = []
-    if only in (None, "api"):
-        api_cmd = [sys.executable, "-m", "uvicorn", "mosaic_api.main:app", "--host", "127.0.0.1"]
-        api_cmd += ["--port", port, "--reload", "--reload-dir", "packages"]
-        procs.append(subprocess.Popen(api_cmd, cwd=ROOT))
-    if only in (None, "web"):
-        web_env = {**os.environ, "VITE_API_TARGET": f"http://127.0.0.1:{port}"}
-        procs.append(subprocess.Popen(["pnpm", "dev"], cwd=ROOT / "web", env=web_env))
-
     try:
+        if only in (None, "api"):
+            api_cmd = [sys.executable, "-m", "uvicorn", "mosaic_api.main:app", "--host"]
+            api_cmd += ["127.0.0.1", "--port", port, "--reload", "--reload-dir", "packages"]
+            procs.append(subprocess.Popen(api_cmd, cwd=ROOT))
+        if only in (None, "web"):
+            web_env = {**os.environ, "VITE_API_TARGET": f"http://127.0.0.1:{port}"}
+            procs.append(subprocess.Popen(["pnpm", "dev"], cwd=ROOT / "web", env=web_env))
         while all(p.poll() is None for p in procs):
             time.sleep(0.5)
     except KeyboardInterrupt:
