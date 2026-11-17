@@ -60,7 +60,7 @@ def open_image(
 
 def _to_srgb(img: Image.Image) -> Image.Image:
     icc = img.info.get("icc_profile")
-    if img.mode in ("RGBA", "LA", "PA") or (img.mode == "P" and "transparency" in img.info):
+    if img.mode in ("RGBA", "LA", "PA") or "transparency" in img.info:
         img = _flatten_alpha(img)
     if icc and img.mode in ("RGB", "CMYK", "L"):
         try:

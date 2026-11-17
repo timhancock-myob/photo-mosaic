@@ -24,6 +24,13 @@ def test_transparency_is_flattened_on_white() -> None:
     assert img.getpixel((0, 0)) == (255, 255, 255)
 
 
+@pytest.mark.parametrize("mode", ["RGB", "L"])
+def test_colour_key_transparency_is_flattened(mode: str) -> None:
+    img = Image.new(mode, (4, 4), 0)
+    key = (0, 0, 0) if mode == "RGB" else 0
+    assert open_image(encode(img, transparency=key)).getpixel((0, 0)) == (255, 255, 255)
+
+
 def test_embedded_srgb_profile_keeps_colour() -> None:
     icc = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
     img = open_image(encode(solid((10, 120, 200)), icc_profile=icc))
