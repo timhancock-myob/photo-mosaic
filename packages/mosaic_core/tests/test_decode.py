@@ -38,6 +38,21 @@ def test_embedded_srgb_profile_keeps_colour() -> None:
     assert abs(r - 10) <= 2 and abs(g - 120) <= 2 and abs(b - 200) <= 2
 
 
+def test_palette_image_profile_is_applied(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: list[str] = []
+    real = ImageCms.profileToProfile
+
+    def spy(im: Image.Image, *args: object, **kwargs: object) -> Image.Image | None:
+        seen.append(im.mode)
+        return real(im, *args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(ImageCms, "profileToProfile", spy)
+    srgb = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
+    img = Image.new("RGB", (4, 4), (200, 40, 10)).convert("P", palette=Image.Palette.ADAPTIVE)
+    assert open_image(encode(img, icc_profile=srgb)).getpixel((0, 0)) == (200, 40, 10)
+    assert seen == ["RGB"]
+
+
 def test_heic_is_supported() -> None:
     img = open_image(encode(solid((20, 160, 60), (64, 48)), "HEIF"))
     assert img.size == (64, 48)

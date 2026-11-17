@@ -62,7 +62,9 @@ def _to_srgb(img: Image.Image) -> Image.Image:
     icc = img.info.get("icc_profile")
     if img.mode in ("RGBA", "LA", "PA") or "transparency" in img.info:
         img = _flatten_alpha(img)
-    if icc and img.mode in ("RGB", "CMYK", "L"):
+    elif img.mode not in ("RGB", "CMYK", "L"):
+        img = img.convert("RGB")
+    if icc:
         try:
             src = ImageCms.ImageCmsProfile(BytesIO(icc))
             converted = ImageCms.profileToProfile(img, src, _SRGB, outputMode="RGB")
