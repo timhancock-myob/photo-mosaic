@@ -12,3 +12,4 @@ Format: **Status**, **Context**, **Decision**, **Consequences**.
 | [0004](0004-default-reuse-policy.md) | Default reuse policy: reuse freely | Accepted |
 | [0005](0005-developer-setup-distribution.md) | Distribution: developer setup only for v1 | Accepted (commands amended by 0006) |
 | [0006](0006-poe-task-runner.md) | Task runner: poe tasks in pyproject.toml, no Makefile | Accepted |
+| [0007](0007-seams-relative-to-base.md) | Seams are measured against the base photo's own edges | Accepted (refines 0003) |

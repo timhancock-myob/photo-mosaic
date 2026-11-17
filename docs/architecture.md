@@ -69,14 +69,16 @@ React SPA ──REST (+ polling)──▶ Mosaic API ──calls──▶ mosaic
 Runs once per tile set. Cached by content hash.
 - Skip, and record a reason for: videos, unreadable or corrupt files, images below a minimum size.
 - Store a **working thumbnail** (e.g. 128 px on the short side, uncropped) and a **display thumbnail** (e.g. 256 px).
-- Compute a **perceptual hash** (e.g. dHash) to detect near-duplicates such as bursts and edited copies. Near-duplicates are collapsed by default.
+- Compute a **perceptual hash** (dHash) to detect near-duplicates such as bursts and edited copies. A tile is a near-duplicate when its dHash is within 4 bits of a kept tile **and** its mean colour is within ΔE 8, so flat photos of different colours are kept. Near-duplicates are collapsed by default; exact copies (same SHA-256) are always collapsed.
 - Signatures depend on the cell aspect ratio (ADR 0002), so they are computed per `(tile, aspect)` on first use and cached, not at index time.
 
 ### 4.3 Signatures
 All in CIELAB.
 - **Fit signature:** the tile, cropped to the cell aspect ratio, downsampled to a small `g x g` Lab grid (e.g. 4x4 to 8x8). This keeps structure, so a cell that is dark on one side and light on the other doesn't match a flat grey tile. It is a superset of the "centre plus edges" scheme in the initial docs.
 - **Edge strips:** for each side (top, right, bottom, left), the mean Lab of `s` segments along a thin border strip. Used for the seam term.
-- **Base cells:** the base is **resampled** to `(cols * g, rows * g)`, not cropped, and split into the same `g x g` grids.
+- **Base cells:** the base is **resampled** to `(cols * g, rows * g)`, not cropped, and split into the same `g x g` grids. Base cell edge strips come from a second resample to `(cols * E, rows * E)`, where `E` is the smallest multiple of `s` at which the strip depth is at least 1 px; they set the colour step each seam should reproduce (ADR 0007).
+- Tiles and base cells go through the same steps (box-resample in sRGB to `g x g` or `E x E`, then convert to Lab), so a tile identical to a cell scores a fit of zero.
+- Defaults (`SignatureSpec`): `g = 6`, `s = 4`, strip depth 8% of the tile side (`E = 16`).
 
 ### 4.4 Distance
 - The colour difference is **CIE76** (Euclidean in Lab), so it vectorises with `scipy.spatial.distance.cdist` or plain NumPy. CIEDE2000 can be added later for the final ranking if tuning shows it helps.
@@ -91,12 +93,14 @@ total_cost(A) = Σ fit(cell, A[cell])
               + λ_self * Σ_adjacent [A[c1] == A[c2]]
 ```
 
-1. **Candidates:** compute the `cells x tiles` fit matrix (100x100 cells x 2,000 tiles is 20M float32 values, about 80 MB). Keep the top-K tiles per cell.
+`seam` is the difference between the colour step across the tile boundary and the step the base photo has at the same boundary (ADR 0007), so tiles blend where the photo is smooth and keep its real edges.
+
+1. **Candidates:** compute the `cells x tiles` fit matrix (100x100 cells x 2,000 tiles is 20M float32 values, about 80 MB), one `cdist` per grid point. Keep the top-K tiles per cell.
 2. **Initialise:** each cell takes its best-fit tile.
-3. **Improve:** iterated conditional modes over the grid. For each cell, pick the candidate that minimises fit plus seams with its current neighbours. Repeat until there is no improvement or the iteration cap is hit. Simulated annealing is an option if needed.
+3. **Improve:** iterated conditional modes over the grid, updated as a checkerboard: cells of one colour never touch, so all of them take their best candidate given the other colour at once (vectorised). A change is accepted only if it strictly lowers the cell's cost, so the total never rises. Repeat until no cell changes or the iteration cap is hit. Simulated annealing is an option if needed.
 4. **Report:** mean fit ΔE, mean seam ΔE, and number of distinct tiles used.
 
-Matching is located in `mosaic_core/matching/`, split by strategy (`candidates.py`, `local_search.py`, `policies.py`).
+Matching is located in `mosaic_core/matching/` (`candidates.py`, `local_search.py`; `policies.py` arrives with the extra reuse policies). Provisional defaults (`MatchOptions`): `λ_seam = 0.5`, `λ_self = 8`, K = 32, at most 30 iterations, to be tuned on real photos.
 
 ### 4.6 Reuse policies (ADR 0004)
 - **Free (default):** no cap. `λ_self` discourages adjacent repeats.
@@ -115,7 +119,8 @@ An optional "fidelity" slider blends each tile toward its cell colour, 0–30%. 
 
 ### 4.10 Rendering
 - The export is composed from **original-resolution** tiles held in the cache, never from thumbnails.
-- The output size is `cols * cell_px` by `rows * cell_px`. It is rendered in row bands to bound memory.
+- The output size is `cols * cell_w` by `rows * cell_h`, where `cell_w` is the chosen cell width in px and `cell_h = cell_w / cell_aspect`.
+- Each distinct tile is decoded once (JPEG draft mode at cell size), centre-cropped, resized and pasted into every cell that uses it.
 - Formats: JPEG (max 65,535 px per side) or PNG. Output pixels are capped by a setting.
 
 ## 5. Source Gateway (`source_gateway`)
@@ -213,7 +218,7 @@ Initial targets, to be confirmed after the engine spike:
 ## 12. Build phases
 
 1. **Foundation:** repo scaffold, CI, pre-commit, `AGENTS.md`.
-2. **Engine:** decode, index, signatures, matching (fit + seams), render. Notebook for tuning `λ` values by eye. CLI that builds a mosaic from two folders.
+2. **Engine:** decode, index, signatures, matching (fit + seams), render, and a CLI (`uv run poe mosaic BASE TILES_DIR OUT`). Tuning `λ` values by eye follows once a tuning photo set exists.
 3. **MVP app:** API and wizard UI, local folder source, free reuse, export.
 4. **Google Photos:** Picker provider.
 5. **Extras:** alternatives and swap, reuse policies, crop, blending.

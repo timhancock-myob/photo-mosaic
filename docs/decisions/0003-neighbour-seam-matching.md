@@ -1,6 +1,6 @@
 # 0003. Matching: cell fit plus neighbour seam blending
 
-- **Status:** Accepted
+- **Status:** Accepted (seam definition refined by [0007](0007-seams-relative-to-base.md))
 - **Date:** 2026-11-17
 
 ## Context

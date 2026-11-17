@@ -8,4 +8,4 @@ Build a photo mosaic from a base photo and a pool of tile photos (a local folder
 - Decisions: [`docs/decisions/`](docs/decisions/)
 - Original brief and starting docs (frozen): [`initial-docs/`](initial-docs/)
 
-Status: foundation scaffold (API, web and CI skeletons). No mosaic features yet.
+Status: engine and CLI (`uv run poe mosaic BASE TILES_DIR OUT`); no app UI for mosaics yet.
